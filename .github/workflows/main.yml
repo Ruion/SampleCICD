@@ -1,20 +1,19 @@
-name: Actions 😎
+name: Build project
 
 on: [push, pull_request]
 
 jobs:
-  buildAndTestForLinuxBasedPlatforms:
+  buildForAllSupportedPlatforms:
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        projectPath:
-          - test-project
         unityVersion:
           - 2021.3.4f1
         targetPlatform:
-          - Android # Build an Android player.
+          - iOS # Build an iOS player.
+          - Android # Build an Android .apk standalone app.
     steps:
       - uses: actions/checkout@v2
         with:
@@ -22,39 +21,30 @@ jobs:
           lfs: true
       - uses: actions/cache@v2
         with:
-          path: ${{ matrix.projectPath }}/Library
-          key:
-            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-${{
-            hashFiles(matrix.projectPath) }}
-          restore-keys: |
-            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}-
-            Library-${{ matrix.projectPath }}-
-            Library-
-      - uses: game-ci/unity-test-runner@v2 # test runner
-        id: testRunner
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}
+          restore-keys: Library-
+          
+      # Test
+      - name: Run tests
+        uses: game-ci/unity-test-runner@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v2 # upload test result artifacts
-        if: always()
-        with:
-          name: Test results (all modes)
-          path: ${{ steps.testRunner.outputs.artifactsPath }}
-      - uses: game-ci/unity-builder@v2 # build app packages
+          
+      # Build    
+      - uses: game-ci/unity-builder@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: ${{ matrix.projectPath }}
-          unityVersion: ${{ matrix.unityVersion }}
           targetPlatform: ${{ matrix.targetPlatform }}
-          customParameters: '-myParameter myValue -myBoolean -ThirdParameter andItsValue'
           allowDirtyBuild : true
-      - uses: actions/upload-artifact@v2 # upload app packages artifacts
+      
+      #output
+      - uses: actions/upload-artifact@v2
         with:
-          name: Build
-          path: build
+          name: Build-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
