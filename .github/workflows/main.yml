@@ -38,8 +38,8 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform:
-            - Android # Build an Android .apk.
-            - WebGL # WebGL.
+           - Android # Build an Android .apk.
+           - WebGL # WebGL.
 
       # Output
       - uses: actions/upload-artifact@v2
