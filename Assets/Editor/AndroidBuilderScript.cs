@@ -8,6 +8,11 @@ public class AndroidBuilderScript
     public static void PerformBuild()
     {
         //EditSetting();
+        EditorPrefs.SetBool("JdkUseEmbedded", true);
+        EditorPrefs.SetBool("NdkUseEmbedded", true);
+        EditorPrefs.SetBool("SdkUseEmbedded", true);
+        EditorPrefs.SetBool("GradleUseEmbedded", true);
+        EditorPrefs.SetBool("AndroidGradleStopDaemonsOnExit", true);
 
         BuildPipeline.BuildPlayer(FindEnabledEditorScenes(), $"Builds/{PlayerSettings.productName}.apk", BuildTarget.Android, BuildOptions.None);
     }
